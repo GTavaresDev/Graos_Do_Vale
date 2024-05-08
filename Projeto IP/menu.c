@@ -43,7 +43,7 @@ int gerar_relatorios(){
 
 
   printf("\n UFG-BSI-IP (COPERATIVA AGRICOLA GRAO_DO_VALE V1.0)");
-  printf("\n ANO: 2024 <nome da funcao>");
+  printf("\n ANO: 2024 <GERAR RELATORIOS>");
   printf("\n --------------------------------------------------------------------------------------------------------------------------------------------");
   printf("\n Origem: %d \t Num. de amostras: %d \t Data: %02d/%02d/%04d ", origem, num_amostras,  tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
   printf("\n Umidade: %.1lf%% \t Peso Limpo: %.1lf \t Transgenico: %d \t Percentual de Impurezas: %.1lf", umidade, peso_limpo, tipo_produto, percentual_impurezas);
