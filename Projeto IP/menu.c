@@ -4,14 +4,42 @@
 // Função para exibir um menu e retornar a opção escolhida pelo usuário
 int menu() {
     int opcao;
+    do {
     printf("\n Ola usario, esse e o sistema da empresa Graos Do Vale");
     printf("\n Digite:");
     printf("\n 1. para DETERMINAR");
     printf("\n 2. para ARQUIVAR");
     printf("\n 3. para GERAR RELATORIOS");
+    printf("\n 0. para FECHAR O PROGRAMA");
     printf("\n Digite sua opcao: ");
-    scanf("%d", &opcao);  
-    return opcao;         
+    scanf("%d", &opcao);      
+        switch (opcao) {
+            case 1:
+                // Chamada para a função "determinar()"
+                break;
+            case 2:
+                // Chamada para a função "arquivar()"
+                break;
+            case 3:
+                gerar_relatorios();
+                break;
+            case 0:
+                printf("\nFechando o programa...");
+                printf("\n --------------------------------------------------------------------------------------------------------------------------------------------");
+                printf("\n Programa desenvolvido pelos alunos:");
+                printf("\n Gabriel Tavares dos Santos");
+                printf("\n Ivan Alves Pires");
+                printf("\n Kaike Andrade Lima");
+                printf("\n Mateus de Castro Leao");
+                printf("\n Heitor Oliveira Pereira");
+                break;
+            default:
+                printf("\nOpcao invalida! Escolha entre 1, 2, 3 ou 0.");
+                break; 
+        }
+    } while (opcao != 0);
+
+    return opcao;
 }
 
 int gerar_relatorios(){
@@ -88,12 +116,12 @@ int gerar_relatorios(){
   printf ("\n    %d \t\t    %d \t\t  xxxx \t\txxxx \t   xxxx \t  xxxx", origem, qtd_cargas);
 
   printf("\n --------------------------------------------------------------------------------------------------------------------------------------------");
-  printf("\n Programa desenvolvido pelos alunos:");
-  printf("\n Gabriel Tavares dos Santos");
-  printf("\n Ivan Alves Pires");
-  printf("\n Kaike Andrade Lima");
-  printf("\n Mateus de Castro Leao");
-  printf("\n Heitor Oliveira Pereira");
+  printf("\n");
+  printf("\n");
+  printf("\n");
+  printf("\n");
+  printf("\n");
+  printf("\n");
   return 0;
   }
 }
