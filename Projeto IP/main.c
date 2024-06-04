@@ -7,7 +7,7 @@
 // Se eu usar um do While e colca esse switch dentro funciona ?? 
 // Função principal
 int main() {
-    int opcao = menu();
+    menu();
 }
 
 
