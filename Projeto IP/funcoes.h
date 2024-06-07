@@ -1,7 +1,7 @@
 int menu();
-int determinar();
-int arquivar();
-int gerar_relatorios();
-int leitura();
+int carregamento();
+int resumo_geral(); 
+int resumo_qtd_mensal();
+
 
 
