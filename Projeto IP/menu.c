@@ -79,7 +79,7 @@ int carregamento()
     printf("\n Digite a data de recebimento (MM/AAAA): ");
     scanf("%7s", dataStr);
 
-    if (sscanf(dataStr, "%d/%d", &mes, &ano) != 3) {
+    if (sscanf(dataStr, "%d/%d", &mes, &ano) != 2) {
         printf("\n Formato de data invalido.");
         return 1;
     }
