@@ -3,6 +3,8 @@
 #include <time.h>
 #include <string.h>
 #include "funcoes.h"
+#define max_linhas_length 1024
+
 
 int data_valida( int mes, int ano) {
     if (ano < 1900 || ano > 2100) return 0;
@@ -66,6 +68,9 @@ int menu()
 }
 int carregamento()
 {
+    char line[max_linhas_length];
+
+
     char nome[40];
     FILE *file;
     char caminho[100] = "C:\\Program Files\\DadosParaTestesTF-Graos_do_Vale\\";
@@ -73,11 +78,11 @@ int carregamento()
 
     printf("\n Digite o nome do arquivo: ");
     scanf("%39s", nome);
-    char dataStr[8];
+    char dataStr[10];
     int mes, ano;
 
     printf("\n Digite a data de recebimento (MM/AAAA): ");
-    scanf("%7s", dataStr);
+    scanf("%9s", dataStr);
 
     if (sscanf(dataStr, "%d/%d", &mes, &ano) != 2) {
         printf("\n Formato de data invalido.");
@@ -91,6 +96,7 @@ int carregamento()
         }
     } else {
         printf("\n Data invalida.");
+        return 1;
     }
 
     strcat(caminho, nome);
@@ -107,72 +113,118 @@ int carregamento()
     rewind(file);
     
 
-    double peso_bruto_produto, umidade, impurezas;
-    int origem, num_amostras, tipo_produto, cargas, variavel, qtd_cargas;
-    if (fscanf(file, "%d %lf %lf %lf %d %d %d %d %d", &cargas, &peso_bruto_produto, &umidade, &impurezas, &num_amostras, &tipo_produto, &origem, &variavel, &qtd_cargas) != 9) {
-        fprintf(stderr, "\n Erro ao ler os dados do arquivo");
+
+    double peso_bruto_produto;
+    int origem, numero_protocolo, num_amostras, tipo_produto;
+    if (fgets(line, sizeof(line), file) != NULL) {
+        sscanf(line, "%d %d %lf %d %d", &origem, &numero_protocolo, &peso_bruto_produto, &num_amostras, &tipo_produto);
+    } else {
+        fprintf(stderr, "Erro ao ler a primeira linha\n");
         fclose(file);
         return 1;
+    }
+    double peso_bruto_amostra, umidade;
+    int indicador,impurezas;
+    for (int i = 0; i < num_amostras; i++) {
+        if (fgets(line, sizeof(line), file) != NULL) {
+            sscanf(line, "%d %lf %d %lf", &indicador, &peso_bruto_amostra, &impurezas, &umidade);
+        } else {
+            fprintf(stderr, "Erro ao ler a linha %d \n", i + 2); 
+            break;
+        }
     }
 
     fclose(file);
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
     double peso_impurezas, percentual_impurezas, peso_limpo;
-    for (int i = 0; i < cargas; i++)
-    {
-        printf("\n ");
-        printf("\n Peso do bruto bruto KG: %.2lf ", peso_bruto_produto);
-        printf("\n Codigo de origem: %d", origem);
-        printf("\n Numero de amostras: %d", num_amostras);
-        printf("\n Porcentagem de impurezas %%: %.2lf", impurezas);
-        printf("\n Tipo de produto: %d", tipo_produto);
-        printf("\n Umidade do produto: %.2lf", umidade);
+      printf("\n ");
+        printf("\n Origem: %d  Num. de amostras: %d  Data: %d/%d", origem, num_amostras, mes, ano); 
+        printf("\n Umidade: %.2lf%% \t Peso Limpo: %.1dT \t Transgenico: %d", umidade, peso_limpo, tipo_produto);
         printf("\n");
+    for (int i = 0; i < num_amostras; i++)
+    {
+    
         peso_impurezas = peso_bruto_produto * (impurezas / 100);
         percentual_impurezas = (peso_impurezas / peso_bruto_produto) * 100;
         peso_limpo = peso_bruto_produto - peso_impurezas;
 
         if (umidade == 0 || umidade <= 8.5)
         {
-            printf("\n Umidade: Faixa 1 \t Quant: %d", num_amostras);
+            printf("\n Umidade: Faixa 1 \t Quant: %d ", num_amostras);
+            printf("\n Ident. da Amostra: ");
             for (int i = 0; i < num_amostras; i++)
             {
-                printf("\n Ident. da Amostra: %d", i + 1);
+                printf(" %d", i + 1);
             }
         }
         else if (umidade >= 8.6 || umidade <= 15)
         {
             printf("\n Umidade: Faixa 2 \t Quant: %d", num_amostras);
+            printf("\n Ident. da Amostra: ");
             for (int i = 0; i < num_amostras; i++)
             {
-                printf("\n Ident. da Amostra: %d", i + 1);
+                printf(" %d", i + 1);
             }
         }
         else if (umidade >= 15.1 || umidade <= 25)
         {
             printf("\n Umidade: Faixa 3 \t Quant: %d", num_amostras);
+            printf("\n Ident. da Amostra: ");
             for (int i = 0; i < num_amostras; i++)
             {
-                printf("\n Ident. da Amostra: %d", i + 1);
+                printf(" %d", i + 1);
             }
         }
-        printf("\n");
-        printf("\n");
+    }
+            printf("\n");
+            printf("\n");
             printf("\n Programa desenvolvido pelos alunos:");
             printf("\n Gabriel Tavares dos Santos");
             printf("\n Ivan Alves Pires");
             printf("\n Kaike Andrade Lima");
             printf("\n Mateus de Castro Leao");
             printf("\n Heitor Oliveira Pereira");
-    }
 }
 
 int resumo_qtd_mensal()
 {
- 
+    printf("\n Ola");
+  /* Aqui nessa função o usario vai digitar a data de um arquivo que ele já armazenou, que foi guardado em txt no banco 
+  de dados, que sera puxado do banco de dados e convertido para exibição */
 }
 
 int resumo_geral() {
 
 }
+
+    /* printf("\n --------------------------------------------------------------------------------------------------------------------------------------------");
+    printf("\n UFG-BSI-IP (COPERATIVA AGRICOLA GRAO_DO_VALE V1.0)");
+    printf("\n ANO: 2024 <GERAR RELATORIOS>");
+    printf("\n --------------------------------------------------------------------------------------------------------------------------------------------");
+    printf("\n Origem: %d \t Num. de amostras: %d \t Data: %02d/%02d/%04d ", origem, num_amostras, tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
+    printf("\n Umidade: %.1lf%% \t Peso Limpo: %.1lf \t Transgenico: %d \t Percentual de Impurezas: %.1lf", umidade, peso_limpo, tipo_produto, percentual_impurezas);
+    // Preciso criar uma função para mostrar a data que o relatorio foi armazenado 
+    printf("\n");
+    printf("\n Mes: %d", mes);
+    printf("\n Qts cargas chegaram nesse mes: %d", qtd_cargas);
+    printf("\n Origem \t Cargas \t GU Faixa 1 \t GU Faixa 2 \t GU Faixa 3 \t GU Extra ");
+    // Retira esses xxxx substituir pelas variaveis do array 
+    printf("\n ----------+----------------+----------------+---------------+---------------+-----------------+---------------------------------------------");
+    printf("\n    %d \t\t    %d \t\t    xxxx \t   xxxx \t  xxxx \t\t   xxxx ", origem, qtd_cargas);
+    printf("\n ----------+----------------+----------------+---------------+---------------+-----------------+---------------------------------------------");
+    printf("\n                                                                                                                                             ");
+    printf("\n        \t        \t Faixa 1                  (umid.)        Faixa 2                (umid.)      Faixa 3           (umid.) ");
+    printf("\n        \t Peso   \t Peso                      Tipo          Peso                    Tipo        Peso               Tipo    ");
+    printf("\n Origem \t Total  \t Limpo        Trans        Nao           Limpo      Trans        Nao         Limpo     Trans    Nao     ");
+    printf("\n ----------+----------------+--------------+-----------+------------+------------+-----------------------------------------------------------");
+    printf("\n    %d \t\t    %d \t\t  xxxx \t\txxxx \t   xxxx \t  xxxx", origem, qtd_cargas);
+
+    printf("\n --------------------------------------------------------------------------------------------------------------------------------------------");
+    printf("\n");
+    printf("\n");
+    printf("\n");
+    printf("\n");
+    printf("\n");
+    printf("\n");
+    */
