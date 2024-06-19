@@ -3,10 +3,23 @@
 #include <time.h>
 #include <string.h>
 #include "funcoes.h"
-#define max_linhas_length 1024
+#define MAX_AMOSTRAS 100
+#define MAX_INDICADORES 1024
 
-int data_valida(int mes, int ano)
-{
+// Definindo o tipo de estrutura utilizada para a ordem de gravação no banco de dados
+typedef struct {
+    int origem;
+    int numero_protocolo;
+    float mes;
+    float ano;
+    int tipo_produto;
+    float peso_bruto_produto;
+    float peso_limpo;
+    float media_guc;
+} Registro;
+
+// Que verifica se a data é valida
+int data_valida(int mes, int ano) {
     if (ano < 1900 || ano > 2100)
         return 0;
     if (mes < 1 || mes > 12)
@@ -14,8 +27,8 @@ int data_valida(int mes, int ano)
     return 1;
 }
 
-int data_nao_futura(int mes, int ano)
-{
+// Função que verifica se o usario não digitando uma data futura 
+int data_nao_futura(int mes, int ano) {
     time_t t = time(NULL);
     struct tm *dataAtual = localtime(&t);
 
@@ -30,276 +43,223 @@ int data_nao_futura(int mes, int ano)
     return 1;
 }
 
-int menu()
-{
+int menu() {
     int opcao;
-    do
-    {
-        printf("\n");
-        printf("\n");
+    do {
+        printf("\n ");
+        printf("\n ");
         printf("\n Ola usuario, esse e o sistema da empresa Graos Do Vale");
         printf("\n Digite:");
+        printf("\n ");
         printf("\n 1. para Descricao de Carregamento");
         printf("\n 2. para Resumo Quantitativo Mensal");
         printf("\n 3. para Resumo Geral Quantitativo e Qualitativo");
-        printf("\n");
-        printf("\n");
         printf("\n 0. para FECHAR O PROGRAMA");
+        printf("\n ");
+        printf("\n ");
         printf("\n Digite sua opcao: ");
         scanf("%d", &opcao);
-        switch (opcao)
-        {
-        case 1:
-            carregamento();
-            break;
-        case 2:
-            resumo_qtd_mensal();
-            break;
-        case 3:
-            resumo_geral();
-            break;
-        case 0:
-            printf("\n Fechando o programa...");
-            printf("\n --------------------------------------------------------------------------------------------------------------------------------------------");
-            break;
-        default:
-            printf("\n Opcao invalida! Escolha entre 1, 2, 3 ou 0.");
-            break;
+        switch (opcao) {
+            case 1:
+                carregamento();
+                break;
+            case 2:
+                resumo_qtd_mensal();
+                break;
+            case 3:
+                resumo_geral();
+                break;
+            case 0:
+                printf("\n Fechando o programa...");
+                break;
+            default:
+                printf("\n Opcao invalida! Escolha entre 1, 2, 3 ou 0.");
+                break;
         }
     } while (opcao != 0);
 
     return opcao;
 }
-int carregamento()
-{
-    char line[max_linhas_length];
-    char nome[40];
-    FILE *file;
-    char caminho[100] = "";
-    char conteudo;
 
-    printf("\n Digite o nome do arquivo: ");
-    scanf("%39s", nome);
+    // Função de carregamento de dados, onde o usario passa o nome do arquivo e a data onde sera armazenado.
+int carregamento() {
+    char nome_arquivo[40];
     char dataStr[10];
     int mes, ano;
 
+    printf("\n Digite o nome do arquivo: ");
+    if (scanf("%39s", nome_arquivo) != 1) {
+        printf("\n Erro ao ler o nome do arquivo.");
+        return 0;
+    }
+
     printf("\n Digite a data de recebimento (MM/AAAA): ");
-    scanf("%9s", dataStr);
-    // Preciso criar uma verificação se aquele mes já não possui outro arquivo 
-    if (sscanf(dataStr, "%d/%d", &mes, &ano) != 2)
-    {
+    if (scanf("%9s", dataStr) != 1) {
+        printf("\n Erro ao ler a data de recebimento.");
+        return 0;
+    }
+
+    if (sscanf(dataStr, "%d/%d", &mes, &ano) != 2) {
         printf("\n Formato de data invalido.");
-        return 1;
+        return 0;
     }
 
-    if (data_valida(mes, ano))
-    {
-        if (data_nao_futura(mes, ano))
-        {
-        }
-        else
-        {
-            printf("\n Erro: A data inserida e futura.");
-        }
-    }
-    else
-    {
+    if (!data_valida(mes, ano)) {
         printf("\n Data invalida.");
-        return 1;
+        return 0;
     }
 
-    strcat(caminho, nome);
-    // Leitura do arquivo .txt
-    file = fopen(caminho, "r");
-
-    if (file == NULL)
-    {
-        perror("Erro ao abrir o arquivo");
-        return 1;
+    if (!data_nao_futura(mes, ano)) {
+        printf("\n Erro: A data inserida e futura.");
+        return 0;
     }
 
-    while ((conteudo = fgetc(file)) != EOF)
-    {
+    FILE *file = fopen(nome_arquivo, "r");
+    if (file == NULL) {
+        perror("\n Erro ao abrir o arquivo");
+        return 0;
     }
 
-    rewind(file);
-    // Leitura da primeira linha do arquivo 
-    double peso_bruto_produto;
-    int origem, numero_protocolo, num_amostras, tipo_produto;
-    if (fgets(line, sizeof(line), file) != NULL)
-    {
-        sscanf(line, "%d %d %lf %d %d", &origem, &numero_protocolo, &peso_bruto_produto, &num_amostras, &tipo_produto);
-    }
-    else
-    {
-        fprintf(stderr, "\n Erro ao ler a primeira linha");
-        fclose(file);
-        return 1;
-    }
-
-    double peso_bruto_amostra, umidade, impurezas;
-    int indicador;
-
-    // Declaração das variáveis de contagem e armazenamento de indicadores
+    // Declaração das variaveis que serão lidas e jogadas ao banco de dados
+    Registro reg;
+    int num_amostras;
+    float peso_bruto_produto, peso_bruto_amostra, umidade, impurezas;
+    float media_guc = 0.0;
     int faixa1_count = 0, faixa2_count = 0, faixa3_count = 0;
-    char faixa1_indicadores[max_linhas_length] = "";
-    char faixa2_indicadores[max_linhas_length] = "";
-    char faixa3_indicadores[max_linhas_length] = "";
-    double soma_peso_impurezas = 0.0;
+    char faixa1_indicadores[MAX_INDICADORES] = "";
+    char faixa2_indicadores[MAX_INDICADORES] = "";
+    char faixa3_indicadores[MAX_INDICADORES] = "";
+    float soma_peso_impurezas = 0.0;
 
-    double media_umidade = 0.0;
-    //Leitura da segunda linha ate a ultima linha e coluna do arquivo 
-    for (int i = 0; i < num_amostras; i++)
-    {
-        if (fgets(line, sizeof(line), file) != NULL)
-        {
-            sscanf(line, "%d %lf %lf %lf", &indicador, &peso_bruto_amostra, &impurezas, &umidade);
-            double percentual_impurezas = (peso_bruto_amostra * 1000) - impurezas ;
-                soma_peso_impurezas += percentual_impurezas;
-            double guc = umidade;
-                media_umidade += guc;
+    // Leitura da primeira linha do arquivo
+    if (fscanf(file, "%d %d %f %d %d", &reg.origem, &reg.numero_protocolo, &peso_bruto_produto, &num_amostras, &reg.tipo_produto) != 5) {
+        fprintf(stderr, "\n Erro ao ler a primeira linha do arquivo");
+        fclose(file);
+        return 0;
+    }
 
-            // O indicador é convertido para uma string (indicador_str) e concatenado à string faixa1_indicadores.
-            if (umidade >= 0 && umidade <= 8.5)
-            {
-                faixa1_count++;
-                char indicador_str[10];
-                sprintf(indicador_str, " %d", indicador);
-                strcat(faixa1_indicadores, indicador_str);
-            }
-            else if (umidade >= 8.6 && umidade <= 15)
-            {
-                faixa2_count++;
-                char indicador_str[10];
-                sprintf(indicador_str, " %d", indicador);
-                strcat(faixa2_indicadores, indicador_str);
-            }
-            else if (umidade >= 15.1 && umidade <= 25)
-            {
-                faixa3_count++;
-                char indicador_str[10];
-                sprintf(indicador_str, " %d", indicador);
-                strcat(faixa3_indicadores, indicador_str);
-            }
+    // Leitura das amostras
+    for (int i = 0; i < num_amostras; i++) {
+        if (fscanf(file, "%*d %f %f %f", &peso_bruto_amostra, &impurezas, &umidade) != 3) {
+            fprintf(stderr, "\n Erro ao ler a amostra %d do arquivo", i + 1);
+            fclose(file);
+            return 0;
         }
-        else
-        {
-            fprintf(stderr, "Erro ao ler a linha %d\n", i + 2);
-            break;
+
+        soma_peso_impurezas += impurezas / 1000.0; 
+        media_guc += umidade;
+
+        // Classificação das faixas de umidade
+        if (umidade >= 0 && umidade <= 8.5) {
+            faixa1_count++;
+            strcat(faixa1_indicadores, " ");
+            sprintf(faixa1_indicadores + strlen(faixa1_indicadores), "%d", i + 1);
+        } else if (umidade > 8.5 && umidade <= 15) {
+            faixa2_count++;
+            strcat(faixa2_indicadores, " ");
+            sprintf(faixa2_indicadores + strlen(faixa2_indicadores), "%d", i + 1);
+        } else if (umidade > 15 && umidade <= 25) {
+            faixa3_count++;
+            strcat(faixa3_indicadores, " ");
+            sprintf(faixa3_indicadores + strlen(faixa3_indicadores), "%d", i + 1);
         }
     }
-    double peso_limpo_Kg = (peso_bruto_produto * 1000) - (soma_peso_impurezas / 1000);
-    double peso_limpo = peso_limpo_Kg / 1000.0;
-    double media_guc = media_umidade / num_amostras;
 
     fclose(file);
-    printf("\n Origem: %d  Num. de amostras: %d  Data: %d/%d", origem, num_amostras, mes, ano);
-    printf("\n Umidade: %.1lf%% \t Peso Limpo: %.2lf T \t Transgenico: %d", media_guc, peso_limpo, tipo_produto);
- 
-    if (faixa1_count > 0)
-    {
+
+    // Cálculo do peso limpo
+    float peso_limpo = peso_bruto_produto - soma_peso_impurezas;
+
+    // Resultados
+    printf("\n Origem: %d  Num. de amostras: %d  Data: %d/%d", reg.origem, num_amostras, mes, ano);
+    printf("\n Umidade: %.1f%% \t Peso Limpo: %.2f T \t Transgenico: %d", media_guc / num_amostras, peso_limpo, reg.tipo_produto);
+
+    if (faixa1_count > 0) {
         printf("\n Umidade: Faixa 1 \t Quant: %d ", faixa1_count);
         printf("\n Ident. das Amostras:%s ", faixa1_indicadores);
     }
-    if (faixa2_count > 0)
-    {
+    if (faixa2_count > 0) {
         printf("\n Umidade: Faixa 2 \t Quant: %d ", faixa2_count);
         printf("\n Ident. das Amostras:%s ", faixa2_indicadores);
     }
-    if (faixa3_count > 0)
-    {
+    if (faixa3_count > 0) {
         printf("\n Umidade: Faixa 3 \t Quant: %d ", faixa3_count);
         printf("\n Ident. das Amostras:%s ", faixa3_indicadores);
     }
-
-    fclose(file);
-
-    printf("\n");
-    printf("\n");
+    printf("\n ");
+    printf("\n ");
     printf("\n Programa desenvolvido pelos alunos:");
     printf("\n Gabriel Tavares dos Santos");
     printf("\n Ivan Alves Pires");
     printf("\n Kaike Andrade Lima");
     printf("\n Mateus de Castro Leao");
     printf("\n Heitor Oliveira Pereira");
+    printf("\n ");
+    printf("\n ");
 
-    FILE *arquivo = fopen("GraosRecebidos-2024.dat", "wb");
-    if(arquivo == NULL) {
-        fprintf(stderr, "Erro ao abrir o arquivo.\n");
-        return 1;
+    // Gravação no arquivo binário
+    FILE *arquivo = fopen("GraosRecebidos-2024.dat", "ab");
+    if (arquivo == NULL) {
+        fprintf(stderr, "\n Erro ao abrir o arquivo para escrita.");
+        return 0;
     }
 
-    // Escrever os dados no arquivo
-    fwrite(&origem, sizeof(origem), 1, arquivo);
-    fwrite(&numero_protocolo, sizeof(numero_protocolo), 1, arquivo);
-    fwrite(&mes, sizeof(mes), 1, arquivo);
-    fwrite(&ano, sizeof(ano), 1, arquivo);
-    fwrite(&tipo_produto, sizeof(tipo_produto), 1, arquivo);
-    fwrite(&peso_limpo, sizeof(peso_limpo), 1, arquivo);
-    fwrite(&peso_bruto_produto, sizeof(peso_bruto_produto), 1, arquivo);
-    fwrite(&media_guc, sizeof(media_guc), 1, arquivo);
+    reg.mes = mes;
+    reg.ano = ano;
+    reg.peso_bruto_produto = peso_bruto_produto;
+    reg.peso_limpo = peso_limpo;
+    reg.media_guc = media_guc / num_amostras;
 
-    
+    fwrite(&reg, sizeof(reg), 1, arquivo);
+
     fclose(arquivo);
+
+    return 1; // Indica que o carregamento foi realizado com sucesso
 }
 
-int lerArquivoBinario(int *origem, int *numero_protocolo, int *mes, int *ano, int *tipo_produto, double *peso_limpo, double *media_guc, double *peso_bruto_produto) {
-    //Leitura do arquivo Binario 
+// Função que le os dados do arquivo em binario
+int lerArquivoBinario(Registro registros[], int *num_registros) {
     FILE *arquivo = fopen("GraosRecebidos-2024.dat", "rb");
     if (arquivo == NULL) {
         fprintf(stderr, "\n Erro ao abrir o arquivo.");
         return 1;
     }
 
-    // Leitura das variaveis do banco de dados binario
-    fread(origem, sizeof(*origem), 1, arquivo);
-    fread(numero_protocolo, sizeof(*numero_protocolo), 1, arquivo);
-    fread(mes, sizeof(*mes), 1, arquivo);
-    fread(ano, sizeof(*ano), 1, arquivo);
-    fread(tipo_produto, sizeof(*tipo_produto), 1,arquivo);
-    fread(peso_limpo, sizeof(*peso_limpo), 1, arquivo);
-    fread(peso_bruto_produto, sizeof(*peso_bruto_produto), 1, arquivo);
-    fread(media_guc, sizeof(*media_guc), 1, arquivo);
+    *num_registros = 0;
+    while (fread(&registros[*num_registros], sizeof(Registro), 1, arquivo) == 1) {
+        (*num_registros)++;
+    }
 
     fclose(arquivo);
     return 0;
 }
 
-int resumo_qtd_mensal(){
-    // Precisa de fazer com que o sistema leia todo o banco de dados e atraves do mes e ano retorne para o usario se ele escolher a opção mensal 
-    // Perguntar pro professor se precisa pedir o ano porque o usario não pode escrever dois arquivos em um mes, mas pode ser no mesmo mes em anos diferentes ?
-    int origem, numero_protocolo, mes, ano, tipo_produto;
-    double peso_limpo, media_guc, peso_bruto_produto;
-    int resultado = lerArquivoBinario(&origem, &numero_protocolo, &mes, &ano, &tipo_produto, &peso_limpo, &media_guc, &peso_bruto_produto);
-    double gu_faixa1 = 0;
-    double gu_faixa2 = 0;
-    double gu_faixa3 = 0;
-    if (media_guc >= 0 && media_guc <= 8.5)
-            {
-                gu_faixa1 = media_guc;
-            }
-            else if (media_guc >= 8.6 && media_guc <= 15.0)
-            {
-                gu_faixa2 = media_guc;
-            }
-            else if (media_guc >= 15.1 && media_guc <= 25.0)
-            {
-                gu_faixa3 = media_guc;
-            }
-        
+int resumo_qtd_mensal() {
+    Registro registros[10]; // Máximo 10 registros serão lidos
+    int num_registros;
+
+    if (lerArquivoBinario(registros, &num_registros) != 0) {
+        return 1; // Retorna 1 em caso de erro ao ler o arquivo binário
+    }
+    printf("\n ");
+    printf("\n ");
     printf("\n --------------------------------------------------------------------------------------------------------------------------------------------");
-    printf("\n UFG-BSI-IP (COPERATIVA AGRICOLA GRAO_DO_VALE V1.0)");
+    printf("\n UFG-BSI-IP (COOPERATIVA AGRICOLA GRAO_DO_VALE V1.0)");
     printf("\n ANO: 2024 <RESUMO QUANTITATIVO MENSAL>");
     printf("\n --------------------------------------------------------------------------------------------------------------------------------------------");
     printf("\n");
-    // Retirar o gu faixa extra e se amostrar cair em alguma dessas faixas mostrar o xx na faixa 
-    // O carga sempre será 1. pq so armazena 1 por mes. 
-    printf("\n Origem \t Carga \t        GU Faixa 1 \t GU Faixa 2 \t  GU Faixa 3 \t     GU Extra ");
-    printf("\n ----------+----------------+----------------+---------------+---------------+-----------------+---------------------------------------------");
-    printf("\n    %d \t    %d \t\t    %.1lf \t   %.1lf \t  %.1lf \t\t    ", origem, numero_protocolo, gu_faixa1, gu_faixa2, gu_faixa3);
-    printf("\n ----------+----------------+----------------+---------------+---------------+-----------------+---------------------------------------------");
-    return 0;
+
+    for (int i = 0; i < num_registros; i++) {
+        Registro *reg = &registros[i];
+        printf("\n Origem: %d  Protocolo: %d  Data: %.0f/%.0f", reg->origem, reg->numero_protocolo, reg->mes, reg->ano);
+        printf("\n Umidade Media: %.1f%% \t Peso Limpo: %.2f T \t Transgenico: %d", reg->media_guc, reg->peso_limpo, reg->tipo_produto);
+        printf("\n --------------------------------------------------------------------------------------------------------------------------------------------");
+    }
+
+    printf("\n");
+    return 0; // Retorna 0 indicando que a função foi executada sem erros
 }
+
 
 int resumo_geral()
 {
