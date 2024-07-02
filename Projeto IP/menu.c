@@ -2,10 +2,13 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
+#include <locale.h> 
 #include "funcoes.h"
 #define MAX_AMOSTRAS 100
 #define MAX_INDICADORES 1024
 
+
+// Pontos Diferentes: Struct e verificação de datas, reais, e não futuras 
 // Definindo o tipo de estrutura utilizada para a ordem de gravação no banco de dados
 typedef struct {
     int origem;
@@ -45,6 +48,8 @@ int data_nao_futura(int mes, int ano) {
 
 int menu() {
     int opcao;
+    const char *nome_arquivo = "GraosRecebidos-2024.dat"; 
+    setlocale(LC_ALL, "Portuguese_Brazil");
     do {
         printf("\n ");
         printf("\n ");
@@ -64,7 +69,7 @@ int menu() {
                 carregamento();
                 break;
             case 2:
-                resumo_qtd_mensal();
+                mensal(nome_arquivo);
                 break;
             case 3:
                 resumo_geral();
@@ -234,12 +239,15 @@ int lerArquivoBinario(Registro registros[], int *num_registros) {
     return 0;
 }
 
-int resumo_qtd_mensal() {
-    Registro registros[10]; // Máximo 10 registros serão lidos
-    int num_registros;
+void relatorioMesEspecifico(const char *nome_arquivo, int mes_escolhido) {
+    FILE *arquivo;
+    Registro reg;
+    int encontrou_registros = 0;
 
-    if (lerArquivoBinario(registros, &num_registros) != 0) {
-        return 1; // Retorna 1 em caso de erro ao ler o arquivo binário
+    arquivo = fopen(nome_arquivo, "rb");
+    if (arquivo == NULL) {
+        perror("Erro ao abrir arquivo");
+        return;
     }
     printf("\n ");
     printf("\n ");
@@ -248,16 +256,131 @@ int resumo_qtd_mensal() {
     printf("\n ANO: 2024 <RESUMO QUANTITATIVO MENSAL>");
     printf("\n --------------------------------------------------------------------------------------------------------------------------------------------");
     printf("\n");
+    printf("\n\nMes: %d\n", mes_escolhido);
+    printf("\nOrigem   Cargas  GU Faixa 1    GU Faixa 2    GU Faixa 3    GU Extra\n");
+    printf("-------+--------+------------+------------+------------+------------\n");
 
-    for (int i = 0; i < num_registros; i++) {
-        Registro *reg = &registros[i];
-        printf("\n Origem: %d  Protocolo: %d  Data: %.0f/%.0f", reg->origem, reg->numero_protocolo, reg->mes, reg->ano);
-        printf("\n Umidade Media: %.1f%% \t Peso Limpo: %.2f T \t Transgenico: %d", reg->media_guc, reg->peso_limpo, reg->tipo_produto);
-        printf("\n --------------------------------------------------------------------------------------------------------------------------------------------");
+    // Lê cada registro do arquivo e imprime apenas os do mês ESCOLHIDO
+    while (fread(&reg, sizeof(Registro), 1, arquivo) == 1) {
+        if ((int)reg.mes == mes_escolhido) {
+            encontrou_registros = 1;
+
+            printf("   %d  ", reg.origem);
+            printf("   %d  ", reg.numero_protocolo);
+
+        
+            if (reg.media_guc >= 0 && reg.media_guc <= 8.5) {
+                printf("              xxxx\n", reg.media_guc);
+            } else if (reg.media_guc > 8.5 && reg.media_guc <= 15.0) {
+                printf("                  xxxx\n", reg.media_guc);
+            } else if (reg.media_guc > 15.0 && reg.media_guc <= 25.0) {
+                printf("                      xxxx\n");
+            } else {
+                printf("\n"); 
+            }
+        }
     }
 
-    printf("\n");
-    return 0; // Retorna 0 indicando que a função foi executada sem erros
+    // Se não encontrou registros para o mês
+    if (!encontrou_registros) {
+        printf("Nenhum registro encontrado para o mes %d\n", mes_escolhido);
+    }
+
+    // Fecha o arquivo
+    fclose(arquivo);
+}
+
+// Função para gerar relatórios de todos os meses consecutivos
+void gerarRelatorioTodosMeses(const char *nome_arquivo) {
+    FILE *arquivo;
+    Registro reg;
+    int mes;
+
+    // Abre o arquivo para leitura binária
+    arquivo = fopen(nome_arquivo, "rb");
+    if (arquivo == NULL) {
+        perror("Erro ao abrir arquivo");
+        return;
+    }
+
+    for (mes = 1; mes <= 12; ++mes) {
+        int encontrou_registros = 0;
+
+        // Imprime cabeçalho do mês
+        printf("\n ");
+        printf("\n ");
+        printf("\n");
+        printf("\n\nMes: %d\n", mes);
+        printf("\nOrigem   Cargas  GU Faixa 1    GU Faixa 2    GU Faixa 3    GU Extra\n");
+        printf("-------+--------+------------+------------+------------+------------\n");
+
+        // Lê cada registro do arquivo e imprime apenas os do mês atual
+        while (fread(&reg, sizeof(Registro), 1, arquivo) == 1) {
+            if ((int)reg.mes == mes) {
+                encontrou_registros = 1;
+
+                printf("   %d  ", reg.origem);
+                printf("   %d  ", reg.numero_protocolo);
+
+                
+                if (reg.media_guc >= 0 && reg.media_guc <= 8.5) {
+                    printf("              xxxx\n");
+                } else if (reg.media_guc > 8.5 && reg.media_guc <= 15.0) {
+                    printf("                  xxxx\n");
+                } else if (reg.media_guc > 15.0 && reg.media_guc <= 25.0) {
+                    printf("                      xxxx\n");
+                } else {
+                    printf("\n"); 
+                }
+            }
+        }
+
+        // Retorna ao início do arquivo para o próximo mês
+        rewind(arquivo);
+
+        // Se não encontrou registros para o mês
+        if (!encontrou_registros) {
+            printf("Nenhum registro encontrado para o mes %d\n", mes);
+        }
+    }
+
+    
+    fclose(arquivo);
+}
+
+
+void mensal(const char *nome_arquivo) {
+    int escolha;
+
+    do {
+        printf("\nDigite:\n");
+        printf("1. para Gerar relatorio de um mes especifico\n");
+        printf("2. para Gerar relatorio de todos os meses (mes a mes)\n");
+        printf("3. para Sair\n");
+        scanf("%d", &escolha);
+
+        switch (escolha) {
+            case 1: {
+                int mes_rel;
+                printf("\nDigite o numero do mes (1 a 12):\n");
+                scanf("%d", &mes_rel);
+                if (mes_rel >= 1 && mes_rel <= 12) {
+                    relatorioMesEspecifico(nome_arquivo, mes_rel);
+                } else {
+                    printf("Opção Invalida!\n");
+                }
+                break;
+            }
+            case 2:
+                gerarRelatorioTodosMeses(nome_arquivo);
+                break;
+            case 3:
+                printf("Saindo do programa.\n");
+                break;
+            default:
+                printf("Opção Invalida!\n");
+        }
+    } while (escolha != 3); 
 }
 
 
