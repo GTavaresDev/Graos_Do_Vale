@@ -248,9 +248,7 @@ void relatorioMesEspecifico(const char *nome_arquivo, int mes_escolhido) {
     if (arquivo == NULL) {
         perror("Erro ao abrir arquivo");
         return;
-    }
-    printf("\n ");
-    printf("\n ");
+    };
     printf("\n --------------------------------------------------------------------------------------------------------------------------------------------");
     printf("\n UFG-BSI-IP (COOPERATIVA AGRICOLA GRAO_DO_VALE V1.0)");
     printf("\n ANO: 2024 <RESUMO QUANTITATIVO MENSAL>");
@@ -302,14 +300,14 @@ void gerarRelatorioTodosMeses(const char *nome_arquivo) {
         perror("Erro ao abrir arquivo");
         return;
     }
-
+        printf("\n --------------------------------------------------------------------------------------------------------------------------------------------");
+        printf("\n UFG-BSI-IP (COOPERATIVA AGRICOLA GRAO_DO_VALE V1.0)");
+        printf("\n ANO: 2024 <RESUMO QUANTITATIVO MENSAL>");
+        printf("\n --------------------------------------------------------------------------------------------------------------------------------------------");
     for (mes = 1; mes <= 12; ++mes) {
         int encontrou_registros = 0;
 
         // Imprime cabeçalho do mês
-        printf("\n ");
-        printf("\n ");
-        printf("\n");
         printf("\n\nMes: %d\n", mes);
         printf("\nOrigem   Cargas  GU Faixa 1    GU Faixa 2    GU Faixa 3    GU Extra\n");
         printf("-------+--------+------------+------------+------------+------------\n");
@@ -386,35 +384,17 @@ void mensal(const char *nome_arquivo) {
 
 int resumo_geral()
 {
-}
-
-/* printf("\n --------------------------------------------------------------------------------------------------------------------------------------------");
-printf("\n UFG-BSI-IP (COPERATIVA AGRICOLA GRAO_DO_VALE V1.0)");
-printf("\n ANO: 2024 <GERAR RELATORIOS>");
 printf("\n --------------------------------------------------------------------------------------------------------------------------------------------");
-printf("\n Origem: %d \t Num. de amostras: %d \t Data: %02d/%02d/%04d ", origem, num_amostras, tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
-printf("\n Umidade: %.1lf%% \t Peso Limpo: %.1lf \t Transgenico: %d \t Percentual de Impurezas: %.1lf", umidade, peso_limpo, tipo_produto, percentual_impurezas);
-// Preciso criar uma função para mostrar a data que o relatorio foi armazenado
-printf("\n");
-printf("\n Mes: %d", mes);
-printf("\n Qts cargas chegaram nesse mes: %d", qtd_cargas);
-printf("\n Origem \t Cargas \t GU Faixa 1 \t GU Faixa 2 \t GU Faixa 3 \t GU Extra ");
-// Retira esses xxxx substituir pelas variaveis do array
-printf("\n ----------+----------------+----------------+---------------+---------------+-----------------+---------------------------------------------");
-printf("\n    %d \t\t    %d \t\t    xxxx \t   xxxx \t  xxxx \t\t   xxxx ", origem, qtd_cargas);
+printf("\n UFG-BSI-IP (COPERATIVA AGRICOLA GRAO_DO_VALE V1.0)");
+printf("\n ANO: 2024 <RELATORIOS GERAL QUANTITATIVO E QUALITATIVO>");
+printf("\n --------------------------------------------------------------------------------------------------------------------------------------------");
+
 printf("\n ----------+----------------+----------------+---------------+---------------+-----------------+---------------------------------------------");
 printf("\n                                                                                                                                             ");
 printf("\n        \t        \t Faixa 1                  (umid.)        Faixa 2                (umid.)      Faixa 3           (umid.) ");
 printf("\n        \t Peso   \t Peso                      Tipo          Peso                    Tipo        Peso               Tipo    ");
 printf("\n Origem \t Total  \t Limpo        Trans        Nao           Limpo      Trans        Nao         Limpo     Trans    Nao     ");
 printf("\n ----------+----------------+--------------+-----------+------------+------------+-----------------------------------------------------------");
-printf("\n    %d \t\t    %d \t\t  xxxx \t\txxxx \t   xxxx \t  xxxx", origem, qtd_cargas);
 
-printf("\n --------------------------------------------------------------------------------------------------------------------------------------------");
-printf("\n");
-printf("\n");
-printf("\n");
-printf("\n");
-printf("\n");
-printf("\n");
-*/
+}
+
