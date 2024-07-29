@@ -8,8 +8,9 @@
 #define MAX_INDICADORES 1024
 
 
-// Pontos Diferentes: Struct e verificação de datas, reais, e não futuras 
-// Definindo o tipo de estrutura utilizada para a ordem de gravação no banco de dados
+// Pontos Diferentes: 
+// Verificação de datas, reais, e não futuras.
+// Solicitação de senha de acesso
 typedef struct {
     int origem;
     int numero_protocolo;
@@ -66,16 +67,19 @@ int menu() {
         scanf("%d", &opcao);
         switch (opcao) {
             case 1:
+                system("cls");
                 carregamento();
                 break;
             case 2:
+                system("cls");
                 mensal(nome_arquivo);
                 break;
             case 3:
+                system("cls");
                 resumo_geral();
                 break;
             case 0:
-                printf("\n Fechando o programa...");
+                system("cls");
                 break;
             default:
                 printf("\n Opcao invalida! Escolha entre 1, 2, 3 ou 0.");
@@ -358,7 +362,9 @@ void mensal(const char *nome_arquivo) {
         scanf("%d", &escolha);
 
         switch (escolha) {
-            case 1: {
+            case 1: 
+            system("cls");
+            {
                 int mes_rel;
                 printf("\nDigite o numero do mes (1 a 12):\n");
                 scanf("%d", &mes_rel);
@@ -370,10 +376,11 @@ void mensal(const char *nome_arquivo) {
                 break;
             }
             case 2:
+                system("cls");
                 gerarRelatorioTodosMeses(nome_arquivo);
                 break;
             case 3:
-                printf("Saindo do programa.\n");
+                system("cls");
                 break;
             default:
                 printf("Opção Invalida!\n");

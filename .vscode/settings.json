@@ -3,6 +3,8 @@
     ".env.*": "dotenv",
     ".prettierrc": "json",
     "*.css": "css",
-    "time.h": "c"
+    "time.h": "c",
+    "funcoes.h": "c",
+    "locale.h": "c"
   }
 }
