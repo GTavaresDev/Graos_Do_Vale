@@ -21,7 +21,6 @@ typedef struct {
     float peso_limpo;
     float media_guc;
 } Registro;
-
 // Que verifica se a data é valida
 int data_valida(int mes, int ano) {
     if (ano < 1900 || ano > 2100)
@@ -389,19 +388,56 @@ void mensal(const char *nome_arquivo) {
 }
 
 
-int resumo_geral()
-{
-printf("\n --------------------------------------------------------------------------------------------------------------------------------------------");
-printf("\n UFG-BSI-IP (COPERATIVA AGRICOLA GRAO_DO_VALE V1.0)");
-printf("\n ANO: 2024 <RELATORIOS GERAL QUANTITATIVO E QUALITATIVO>");
-printf("\n --------------------------------------------------------------------------------------------------------------------------------------------");
+int resumo_geral() {
+    Registro registros[MAX_AMOSTRAS]; // Array para armazenar os registros lidos do arquivo
+    int num_registros = 0;
+    
+    // Lê os registros do arquivo binário
+    if (lerArquivoBinario(registros, &num_registros) != 0) {
+        printf("\n Erro ao ler registros do arquivo.");
+        return 0;
+    }
 
-printf("\n ----------+----------------+----------------+---------------+---------------+-----------------+---------------------------------------------");
-printf("\n                                                                                                                                             ");
-printf("\n        \t        \t Faixa 1                  (umid.)        Faixa 2                (umid.)      Faixa 3           (umid.) ");
-printf("\n        \t Peso   \t Peso                      Tipo          Peso                    Tipo        Peso               Tipo    ");
-printf("\n Origem \t Total  \t Limpo        Trans        Nao           Limpo      Trans        Nao         Limpo     Trans    Nao     ");
-printf("\n ----------+----------------+--------------+-----------+------------+------------+-----------------------------------------------------------");
+    // Declaração de variáveis para cálculos de resumo
+    float total_peso_limpo_faixa1 = 0.0, total_peso_limpo_faixa2 = 0.0, total_peso_limpo_faixa3 = 0.0;
+    int count_transgenicos_faixa1 = 0, count_transgenicos_faixa2 = 0, count_transgenicos_faixa3 = 0;
+    int count_nao_transgenicos_faixa1 = 0, count_nao_transgenicos_faixa2 = 0, count_nao_transgenicos_faixa3 = 0;
 
+    // laço para processar os registros e calcular o resumo
+    for (int i = 0; i < num_registros; i++) {
+        Registro reg = registros[i];
+
+        if (reg.media_guc >= 0 && reg.media_guc <= 8.5) {
+            total_peso_limpo_faixa1 += reg.peso_limpo;
+            if (reg.tipo_produto == 1) {
+                count_transgenicos_faixa1++;
+            } else {
+                count_nao_transgenicos_faixa1++;
+            }
+        } else if (reg.media_guc > 8.5 && reg.media_guc <= 15.0) {
+            total_peso_limpo_faixa2 += reg.peso_limpo;
+            if (reg.tipo_produto == 1) {
+                count_transgenicos_faixa2++;
+            } else {
+                count_nao_transgenicos_faixa2++;
+            }
+        } else if (reg.media_guc > 15.0 && reg.media_guc <= 25.0) {
+            total_peso_limpo_faixa3 += reg.peso_limpo;
+            if (reg.tipo_produto == 1) {
+                count_transgenicos_faixa3++;
+            } else {
+                count_nao_transgenicos_faixa3++;
+            }
+        }
+    }
+
+    // Impressão do resumo geral
+    printf("\n Origem  Total    Peso Limpo   Transgenico   Nao Transgenico");
+    printf("\n -------+-------+------------+-------------+------------------");
+    printf("\n Faixa 1      \t %.2f   \t %d \t\t  %d", total_peso_limpo_faixa1, count_transgenicos_faixa1, count_nao_transgenicos_faixa1);
+    printf("\n Faixa 2      \t %.2f   \t %d \t\t  %d", total_peso_limpo_faixa2, count_transgenicos_faixa2, count_nao_transgenicos_faixa2);
+    printf("\n Faixa 3      \t %.2f   \t %d \t\t  %d", total_peso_limpo_faixa3, count_transgenicos_faixa3, count_nao_transgenicos_faixa3);
+    printf("\n ------------------------------------------------------------------");
+
+    return 1;
 }
-
