@@ -21,6 +21,7 @@ typedef struct {
     float peso_limpo;
     float media_guc;
 } Registro;
+
 // Que verifica se a data é valida
 int data_valida(int mes, int ano) {
     if (ano < 1900 || ano > 2100)
@@ -49,7 +50,7 @@ int data_nao_futura(int mes, int ano) {
 int menu() {
     int opcao;
     const char *nome_arquivo = "GraosRecebidos-2024.dat"; 
-    setlocale(LC_ALL, "Portuguese_Brazil");
+
     do {
         printf("\n ");
         printf("\n ");
@@ -59,8 +60,10 @@ int menu() {
         printf("\n 1. para Descricao de Carregamento");
         printf("\n 2. para Resumo Quantitativo Mensal");
         printf("\n 3. para Resumo Geral Quantitativo e Qualitativo");
-        printf("\n 0. para FECHAR O PROGRAMA");
+        printf("\n 4. para Resumo Geral das Faixas");
         printf("\n ");
+        printf("\n ");
+        printf("\n 0. para FECHAR O PROGRAMA");
         printf("\n ");
         printf("\n Digite sua opcao: ");
         scanf("%d", &opcao);
@@ -75,8 +78,12 @@ int menu() {
                 break;
             case 3:
                 system("cls");
-                resumo_geral();
+                //resumo_geral();
                 break;
+            case 4:
+                system("cls");
+                resumo_geral_faixas();
+                break;    
             case 0:
                 system("cls");
                 break;
@@ -388,7 +395,7 @@ void mensal(const char *nome_arquivo) {
 }
 
 
-int resumo_geral() {
+int resumo_geral_faixas(){
     Registro registros[MAX_AMOSTRAS]; // Array para armazenar os registros lidos do arquivo
     int num_registros = 0;
     
@@ -432,12 +439,14 @@ int resumo_geral() {
     }
 
     // Impressão do resumo geral
-    printf("\n Origem  Total    Peso Limpo   Transgenico   Nao Transgenico");
-    printf("\n -------+-------+------------+-------------+------------------");
-    printf("\n Faixa 1      \t %.2f   \t %d \t\t  %d", total_peso_limpo_faixa1, count_transgenicos_faixa1, count_nao_transgenicos_faixa1);
-    printf("\n Faixa 2      \t %.2f   \t %d \t\t  %d", total_peso_limpo_faixa2, count_transgenicos_faixa2, count_nao_transgenicos_faixa2);
-    printf("\n Faixa 3      \t %.2f   \t %d \t\t  %d", total_peso_limpo_faixa3, count_transgenicos_faixa3, count_nao_transgenicos_faixa3);
-    printf("\n ------------------------------------------------------------------");
+    //Falta fazer a leitura do peso bruto inicial
+    // Tem algum problema ao inves de mostrar se tem ou não transgenico mostrar quantos sao 
+    printf("\n \t\t Peso Limpo \t\t Transgenico \t\t\t Nao Transgenico");
+    printf("\n ---------+----------------------+-------------------------------+--------------------------------------------");
+    printf("\n Faixa 1 \t %.2f \t\t\t\t %d \t\t\t\t %d",total_peso_limpo_faixa1, count_transgenicos_faixa1, count_nao_transgenicos_faixa1);
+    printf("\n Faixa 2 \t%.2f \t\t\t\t %d \t\t\t\t %d",total_peso_limpo_faixa2, count_transgenicos_faixa2, count_nao_transgenicos_faixa2);
+    printf("\n Faixa 3 \t  %.2f \t\t\t\t %d \t\t\t\t %d", total_peso_limpo_faixa3, count_transgenicos_faixa3, count_nao_transgenicos_faixa3);
+    printf("\n ---------+----------------------+-------------------------------+--------------------------------------------");
 
     return 1;
 }
