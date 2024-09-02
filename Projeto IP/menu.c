@@ -78,7 +78,7 @@ int menu() {
                 break;
             case 3:
                 system("cls");
-                //resumo_geral();
+                RelatorioTodosMeses(nome_arquivo);
                 break;
             case 4:
                 system("cls");
@@ -296,6 +296,17 @@ void relatorioMesEspecifico(const char *nome_arquivo, int mes_escolhido) {
 
     // Fecha o arquivo
     fclose(arquivo);
+
+    printf("\n ");
+    printf("\n ");
+    printf("\n Programa desenvolvido pelos alunos:");
+    printf("\n Gabriel Tavares dos Santos");
+    printf("\n Ivan Alves Pires");
+    printf("\n Kaike Andrade Lima");
+    printf("\n Mateus de Castro Leao");
+    printf("\n Heitor Oliveira Pereira");
+    printf("\n ");
+    printf("\n ");
 }
 
 // Função para gerar relatórios de todos os meses consecutivos
@@ -354,6 +365,16 @@ void gerarRelatorioTodosMeses(const char *nome_arquivo) {
 
     
     fclose(arquivo);
+    printf("\n ");
+    printf("\n ");
+    printf("\n Programa desenvolvido pelos alunos:");
+    printf("\n Gabriel Tavares dos Santos");
+    printf("\n Ivan Alves Pires");
+    printf("\n Kaike Andrade Lima");
+    printf("\n Mateus de Castro Leao");
+    printf("\n Heitor Oliveira Pereira");
+    printf("\n ");
+    printf("\n ");
 }
 
 
@@ -443,10 +464,101 @@ int resumo_geral_faixas(){
     // Tem algum problema ao inves de mostrar se tem ou não transgenico mostrar quantos sao 
     printf("\n \t\t Peso Limpo \t\t Transgenico \t\t\t Nao Transgenico");
     printf("\n ---------+----------------------+-------------------------------+--------------------------------------------");
-    printf("\n Faixa 1 \t %.2f \t\t\t\t %d \t\t\t\t %d",total_peso_limpo_faixa1, count_transgenicos_faixa1, count_nao_transgenicos_faixa1);
-    printf("\n Faixa 2 \t%.2f \t\t\t\t %d \t\t\t\t %d",total_peso_limpo_faixa2, count_transgenicos_faixa2, count_nao_transgenicos_faixa2);
-    printf("\n Faixa 3 \t  %.2f \t\t\t\t %d \t\t\t\t %d", total_peso_limpo_faixa3, count_transgenicos_faixa3, count_nao_transgenicos_faixa3);
+    printf("\n Faixa 1 \t %2.2f \t\t\t\t %d \t\t\t\t %d",total_peso_limpo_faixa1, count_transgenicos_faixa1, count_nao_transgenicos_faixa1);
+    printf("\n Faixa 2 \t %.2f \t\t\t\t %d \t\t\t\t %d",total_peso_limpo_faixa2, count_transgenicos_faixa2, count_nao_transgenicos_faixa2);
+    printf("\n Faixa 3 \t %2.2f \t\t\t\t %d \t\t\t\t %d", total_peso_limpo_faixa3, count_transgenicos_faixa3, count_nao_transgenicos_faixa3);
     printf("\n ---------+----------------------+-------------------------------+--------------------------------------------");
 
+    
+    printf("\n ");
+    printf("\n ");
+    printf("\n Programa desenvolvido pelos alunos:");
+    printf("\n Gabriel Tavares dos Santos");
+    printf("\n Ivan Alves Pires");
+    printf("\n Kaike Andrade Lima");
+    printf("\n Mateus de Castro Leao");
+    printf("\n Heitor Oliveira Pereira");
+    printf("\n ");
+    printf("\n ");
+
     return 1;
+}
+
+// Função para gerar relatórios de todos os meses consecutivos
+void RelatorioTodosMeses(const char *nome_arquivo) {
+    FILE *arquivo;
+    Registro reg;
+    int mes;
+
+    // Abre o arquivo para leitura binária
+    arquivo = fopen(nome_arquivo, "rb");
+    if (arquivo == NULL) {
+        perror("Erro ao abrir arquivo");
+        return;
+    }
+        printf("\n --------------------------------------------------------------------------------------------------------------------------------------------");
+        printf("\n UFG-BSI-IP (COOPERATIVA AGRICOLA GRAO_DO_VALE V1.0)");
+        printf("\n ANO: 2024 <RESUMO QUANTITATIVO MENSAL>");
+        printf("\n --------------------------------------------------------------------------------------------------------------------------------------------");
+        printf("\n        |  Peso   |            ||                       ||                       ||                       ||            ||            ||");
+        printf("\n Origem |  Total  | Peso Limpo ||        Faixa 1        ||        Faixa 2        ||        Faixa 3        ||   TRANS    ||    NATURAL ||");
+        printf("\n");
+
+    for (mes = 1; mes <= 12; ++mes) {
+        int encontrou_registros = 0;
+
+        // Imprime cabeçalho do mês
+        // Lê cada registro do arquivo e imprime apenas os do mês atual
+        while (fread(&reg, sizeof(Registro), 1, arquivo) == 1) {
+            if ((int)reg.mes == mes) {
+                encontrou_registros = 1;
+
+                printf("   %3d  ", reg.origem); 
+                printf("    %.1f  ", reg.peso_bruto_produto);
+                printf("      %.1f  ", reg.peso_limpo);
+
+                
+                if (reg.media_guc >= 0 && reg.media_guc <= 8.5 && reg.tipo_produto != 0 ) {
+                    printf(" \t\t   x  \t\t\t\t\t\t\t\t\t x \n");
+                } else if(reg.media_guc >= 0 && reg.media_guc <= 8.5 && reg.tipo_produto != 1 ){
+                    printf(" \t\t   x  \t\t\t\t\t\t\t\t\t\t\t x \n");
+                } else if (reg.media_guc > 8.5 && reg.media_guc <= 15.0 && reg.tipo_produto != 0) {
+                    printf(" \t\t\t\t\t        x \t\t\t\t\t x \n");
+                } else if(reg.media_guc > 8.5 && reg.media_guc <= 15.0 && reg.tipo_produto != 1){          
+                    printf(" \t\t\t\t\t        x \t\t\t\t\t\t\t x \n");
+                } else if (reg.media_guc > 15.0 && reg.media_guc <= 25.0 && reg.tipo_produto != 1) {
+                    printf(" \t\t\t\t\t\t\t\t     x \t\t\t x\n" );
+                } else if (reg.media_guc > 15.0 && reg.media_guc <= 25.0 && reg.tipo_produto != 0 ) {
+                    printf(" \t\t\t\t\t\t\t\t     x \t\t\t\t\t x\n" );
+                } else {
+                    printf("\n"); 
+                }
+
+                
+                
+            }
+        }
+
+
+        
+        // Retorna ao início do arquivo para o próximo mês
+        rewind(arquivo);
+
+    
+    }
+
+    
+    fclose(arquivo);
+
+    printf("\n ");
+    printf("\n ");
+    printf("\n Programa desenvolvido pelos alunos:");
+    printf("\n Gabriel Tavares dos Santos");
+    printf("\n Ivan Alves Pires");
+    printf("\n Kaike Andrade Lima");
+    printf("\n Mateus de Castro Leao");
+    printf("\n Heitor Oliveira Pereira");
+    printf("\n ");
+    printf("\n ");
+    
 }
